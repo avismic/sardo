@@ -2,6 +2,7 @@
 // FILE: js/Components/BulkRest.js
 //================================================
 import { Store } from '../Store.js';
+import { notify } from '../notification.js';
 
 class BulkRest extends HTMLElement {
   constructor() {
@@ -37,7 +38,7 @@ class BulkRest extends HTMLElement {
     if (remaining <= 0) {
       clearInterval(this.intervalId);
       Store.update({ bulkTimerEnd: null, step: 'fold' });
-      alert('Bulk rest complete! Time for the first fold.');
+      notify('Bulk rest complete! Time for the first fold.', 'info');
     } else if (display) {
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);
@@ -57,13 +58,28 @@ class BulkRest extends HTMLElement {
           : `<div class="input-group">
                <label>Rest before first fold (minutes)</label>
                <input type="number" id="bulk-input" min="0" value="${bulk}">
-             </div>`
-        }
-        <button id="btn-start-bulk" class="btn-primary">
-          ${timerActive ? 'Timer Running...' : 'Start Timer'}
-        </button>
+             </div>`}
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+          <button id="btn-start-bulk" class="btn-primary">
+            ${timerActive ? 'Timer Running...' : 'Start Timer'}
+          </button>
+        </div>
       </section>
     `;
+
+    // Back → Settings
+    this.querySelector('#btn-back').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ step: 'settings' });
+    };
+
+    // Skip → Folding (bypass timer)
+    this.querySelector('#btn-skip').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ bulkTimerEnd: null, step: 'fold' });
+    };
 
     if (!timerActive) {
       const input = this.querySelector('#bulk-input');
@@ -73,7 +89,6 @@ class BulkRest extends HTMLElement {
       };
       this.querySelector('#btn-start-bulk').onclick = () => this.startTimer();
     } else {
-      // Timer already running – disable button & start countdown display
       this.querySelector('#btn-start-bulk').disabled = true;
       this.resumeTimer();
     }

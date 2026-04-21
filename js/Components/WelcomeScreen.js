@@ -1,7 +1,7 @@
-// ================================================================
+//================================================
 // FILE: js/Components/WelcomeScreen.js
-// ================================================================
-import { Store } from "../Store.js";
+//================================================
+import { Store } from '../Store.js';
 
 class WelcomeScreen extends HTMLElement {
   connectedCallback() {
@@ -9,57 +9,75 @@ class WelcomeScreen extends HTMLElement {
   }
 
   render() {
-    const name = Store.state.userName ? `, ${Store.state.userName}` : "";
-
-    // ---- History (most recent bake) ---------------------------------
+    const name = Store.state.userName ? `, ${Store.state.userName}` : '';
     const history = Store.state.history || [];
-    const latest = history.length ? history[history.length - 1] : null;
 
-    const latestHtml = latest
-      ? `
-        <section class="card" style="margin-top:20px;">
-          <h3>Last Bake – ${new Date(latest.timestamp).toLocaleString()}</h3>
-          <p>
-            <strong>Flour:</strong> ${latest.flour} g,
-            <strong>Water:</strong> ${latest.water} g,
-            <strong>Starter:</strong> ${latest.starter} g,
-            <strong>Loaves:</strong> ${latest.loaves}
-          </p>
-          <p><strong>Notes:</strong> ${latest.notes || "—"}</p>
-          <div class="photo-gallery">
-            ${latest.photos.map((src) => `<img src="${src}" class="photo-thumb" alt="last bake photo">`).join("")}
-          </div>
-        </section>
-      `
-      : `<p style="margin-top:20px;">No previous bake data.</p>`;
-
-    // ---- Main welcome card -------------------------------------------
     this.innerHTML = `
       <section class="card">
         <h2>Welcome${name}!</h2>
         <p>Ready to bake some sourdough?</p>
-
-        <button id="btn-start" class="btn-primary" style="margin-top:15px;">
-          Start New Bake
-        </button>
-
-        ${latestHtml}
+        <button id="btn-start" class="btn-primary" style="margin-top:15px;">Start New Bake</button>
       </section>
+
+      ${history
+        .map(
+          (entry, idx) => `
+            <section class="card">
+              <h3>Bake #${idx + 1} – ${new Date(entry.timestamp).toLocaleString()}</h3>
+              <p>
+                <strong>Flour:</strong> ${entry.flour} g,
+                <strong>Water:</strong> ${entry.water} g,
+                <strong>Starter:</strong> ${entry.starter} g,
+                <strong>Loaves:</strong> ${entry.loaves}
+              </p>
+
+              <p><strong>Final notes:</strong> ${entry.notes || '—'}</p>
+
+              ${
+                entry.foldLogs && entry.foldLogs.length
+                  ? `
+                    <div><strong>Fold notes:</strong>
+                      <ul style="margin:8px 0 0 20px; padding:0;">
+                        ${entry.foldLogs
+                          .map(
+                            log => `
+                              <li><strong>Fold ${log.fold}:</strong> ${
+                                log.note ? log.note : '<em>(no note)</em>'
+                              }</li>`
+                          )
+                          .join('')}
+                      </ul>
+                    </div>
+                  `
+                  : '<p><strong>Fold notes:</strong> —</p>'
+              }
+
+              ${
+                entry.photos && entry.photos.length
+                  ? `
+                      <div class="photo-gallery" style="margin-top:15px;">
+                        ${entry.photos
+                          .map(src => `<img src="${src}" class="photo-thumb" alt="bake photo">`)
+                          .join('')}
+                      </div>
+                    `
+                  : ''
+              }
+            </section>
+          `
+        )
+        .join('')}
     `;
 
-    // ---- “Start” button ------------------------------------------------
-    this.querySelector("#btn-start").onclick = () => {
-      // If we never asked for a secret name, ask now (only once)
+    this.querySelector('#btn-start').onclick = () => {
       if (!Store.state.userName) {
-        const secret = prompt("Choose a secret name for your baking sessions:");
+        const secret = prompt('Choose a secret name for your baking sessions:');
         if (secret) Store.update({ userName: secret });
-        else return; // user cancelled
+        else return;
       }
-
-      // Clear the active bake fields and move to the calculator
-      Store.clearActive();
-      Store.update({ step: "calculator" });
+      Store.clearActive();                // keep name & history, reset active data
+      Store.update({ step: 'calculator' });
     };
   }
 }
-customElements.define("welcome-screen", WelcomeScreen);
+customElements.define('welcome-screen', WelcomeScreen);

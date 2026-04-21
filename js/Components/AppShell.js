@@ -4,10 +4,14 @@
 import { Store } from '../Store.js';
 import './WelcomeScreen.js';
 import './Calculator.js';
+import './Settings.js';           // ← NEW
 import './BulkRest.js';
 import './FoldingStep.js';
 import './BakingStep.js';
 import './ReviewStep.js';
+import './EnvironmentLog.js';
+import './Scheduler.js';
+import './Timer.js';
 
 class SourdoughApp extends HTMLElement {
   constructor() {
@@ -26,12 +30,13 @@ class SourdoughApp extends HTMLElement {
 
   render() {
     const step = Store.state.step || 'welcome';
-    this.innerHTML = ''; // clear any previous child
+    this.innerHTML = '';
 
     let tag = '';
     switch (step) {
       case 'welcome':   tag = 'welcome-screen';   break;
       case 'calculator':tag = 'sourdough-calculator'; break;
+      case 'settings':  tag = 'sourdough-settings'; break;   // ← NEW
       case 'bulk':      tag = 'bulk-rest';       break;
       case 'fold':      tag = 'folding-step';    break;
       case 'baking':    tag = 'baking-step';     break;

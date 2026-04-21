@@ -32,6 +32,7 @@ class SourdoughCalculator extends HTMLElement {
     this.innerHTML = `
       <section class="card">
         <h2>1. Recipe Calculator</h2>
+
         <div class="input-group">
           <label>Flour (g)</label>
           <input type="number" id="f" min="0" value="${flour}">
@@ -48,14 +49,20 @@ class SourdoughCalculator extends HTMLElement {
           <label>Loaves</label>
           <input type="number" id="l" min="1" value="${loaves}">
         </div>
+
         <div class="hydration-badge">
           Hydration: <span id="h-val">0</span>%
         </div>
-        <button id="btn-next" class="btn-primary" style="margin-top:15px;">Next</button>
+
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+          <button id="btn-next" class="btn-primary">Next</button>
+        </div>
       </section>
     `;
 
-    // Handle changes to any input
+    // input handling
     this.querySelectorAll('input').forEach(input => {
       input.oninput = (e) => {
         const val = parseFloat(e.target.value) || 0;
@@ -68,10 +75,10 @@ class SourdoughCalculator extends HTMLElement {
       };
     });
 
-    // Next button → bulk‑fermentation step
-    this.querySelector('#btn-next').onclick = () => {
-      Store.update({ step: 'bulk' });
-    };
+    // navigation buttons
+    this.querySelector('#btn-back').onclick = () => Store.update({ step: 'welcome' });
+    this.querySelector('#btn-skip').onclick = () => Store.update({ step: 'settings' });
+    this.querySelector('#btn-next').onclick = () => Store.update({ step: 'settings' });
 
     this.updateHydration();
   }

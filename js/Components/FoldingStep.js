@@ -2,6 +2,7 @@
 // FILE: js/Components/FoldingStep.js
 //================================================
 import { Store } from '../Store.js';
+import { notify } from '../notification.js';
 
 class FoldingStep extends HTMLElement {
   constructor() {
@@ -44,7 +45,6 @@ class FoldingStep extends HTMLElement {
     }
   }
 
-  /*** RENDER ***/
   render() {
     const {
       foldsConfigured,
@@ -54,34 +54,46 @@ class FoldingStep extends HTMLElement {
       nextFoldTime,
     } = Store.state;
 
-    // ---------- CONFIGURATION UI ----------
+    // --------------- CONFIGURATION -----------------
     if (!foldsConfigured) {
       this.innerHTML = `
         <section class="card">
           <h2>3. Folding Setup</h2>
+
           <div class="input-group">
             <label>Number of folds</label>
             <input type="number" id="folds-num" min="1" value="${numFolds}">
           </div>
+
           <div class="input-group">
             <label>Interval between folds (minutes)</label>
             <input type="number" id="folds-interval" min="0" value="${foldInterval}">
           </div>
-          <button id="btn-start-folding" class="btn-primary">Start Folding</button>
+
+          <div class="controls" style="margin-top:15px;">
+            <button id="btn-back" class="btn-secondary">Back</button>
+            <button id="btn-skip" class="btn-secondary">Skip</button>
+            <button id="btn-start-folding" class="btn-primary">Start Folding</button>
+          </div>
         </section>
       `;
 
-      const foldsInput = this.querySelector('#folds-num');
-      const intervalInput = this.querySelector('#folds-interval');
+      // Back → Bulk
+      this.querySelector('#btn-back').onclick = () => Store.update({ step: 'bulk' });
+      // Skip → Baking (skip folding entirely)
+      this.querySelector('#btn-skip').onclick = () => Store.update({ step: 'baking' });
 
-      foldsInput.oninput = (e) => {
+      // Inputs
+      this.querySelector('#folds-num').oninput = (e) => {
         const v = Math.max(1, parseInt(e.target.value, 10) || 1);
         Store.update({ numFolds: v });
       };
-      intervalInput.oninput = (e) => {
+      this.querySelector('#folds-interval').oninput = (e) => {
         const v = Math.max(0, parseInt(e.target.value, 10) || 0);
         Store.update({ foldInterval: v });
       };
+
+      // Start folding – switch to folding UI
       this.querySelector('#btn-start-folding').onclick = () => {
         Store.update({
           foldsConfigured: true,
@@ -90,10 +102,10 @@ class FoldingStep extends HTMLElement {
           nextFoldTime: null,
         });
       };
-      return; // keep config UI only
+      return; // stop further rendering
     }
 
-    // ---------- FOLDING UI ----------
+    // --------------- FOLDING UI -----------------
     const currentFold = foldsDone + 1;
     const waiting = !!nextFoldTime;
     const allDone = foldsDone >= numFolds;
@@ -105,19 +117,37 @@ class FoldingStep extends HTMLElement {
           ? `<div>Next fold in: <span id="fold-countdown"></span></div>`
           : `${!allDone ? `<button id="btn-do-fold" class="btn-primary">Perform Fold #${currentFold}</button>` : ''}`
         }
+
         <div id="fold-log-section" style="margin-top:15px;"></div>
+
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+        </div>
+
         ${allDone ? `<button id="btn-to-baking" class="btn-secondary" style="margin-top:15px;">Proceed to Baking</button>` : ''}
       </section>
     `;
 
-    // If we are waiting for the interval → start the countdown
+    // Back → Bulk
+    this.querySelector('#btn-back').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ step: 'bulk' });
+    };
+    // Skip → Baking
+    this.querySelector('#btn-skip').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ step: 'baking' });
+    };
+
+    // Countdown handling
     if (waiting) {
       clearInterval(this.intervalId);
       this.updateCountdown();
       this.intervalId = setInterval(() => this.updateCountdown(), 1000);
     }
 
-    // If the user can perform a fold now
+    // Perform a fold (if we are not waiting)
     if (!waiting && !allDone) {
       this.querySelector('#btn-do-fold').onclick = () => {
         const note = prompt(`Add a note for Fold #${currentFold} (optional)`);
@@ -132,18 +162,16 @@ class FoldingStep extends HTMLElement {
           foldLogs: updatedLogs,
         });
 
-        // If there are still folds left, start the interval timer
+        // If more folds remain, start interval timer
         if (currentFold < Store.state.numFolds) {
           this.startTimerForNextFold();
         }
       };
     }
 
-    // After all folds → go to baking step
+    // After all folds → go to baking
     if (allDone) {
-      this.querySelector('#btn-to-baking').onclick = () => {
-        Store.update({ step: 'baking' });
-      };
+      this.querySelector('#btn-to-baking').onclick = () => Store.update({ step: 'baking' });
     }
   }
 }
