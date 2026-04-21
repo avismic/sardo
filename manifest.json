@@ -1,0 +1,15 @@
+{
+  "name": "Sourdough Companion",
+  "short_name": "Sourdough",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fcf9f2",
+  "theme_color": "#d4a373",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3211/3211327.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,1061 @@
+Directory structure:
+└── sardo/
+    ├── app.js
+    ├── index.html
+    ├── manifest.json
+    ├── style.css
+    ├── sw.js
+    └── js/
+        ├── Store.js
+        └── Components/
+            ├── AppShell.js
+            ├── BakingStep.js
+            ├── BulkRest.js
+            ├── Calculator.js
+            ├── EnvironmentLog.js
+            ├── FoldingStep.js
+            ├── ReviewStep.js
+            ├── Scheduler.js
+            ├── Timer.js
+            └── WelcomeScreen.js
+
+================================================
+FILE: app.js
+================================================
+//================================================
+// FILE: app.js
+//================================================
+import "./js/Components/AppShell.js";
+// Legacy components are still imported in case they are useful later
+import "./js/Components/Calculator.js";
+import "./js/Components/Timer.js";
+import "./js/Components/Scheduler.js";
+import "./js/Components/EnvironmentLog.js";
+
+let wakeLock = null;
+
+// Function to keep the screen awake
+const requestWakeLock = async () => {
+  try {
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      console.log("Wake Lock active: Screen will stay on.");
+      wakeLock.addEventListener("release", () => {
+        console.log("Wake Lock released.");
+      });
+    }
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+};
+
+// Reâ€‘request when the app comes back to the foreground
+document.addEventListener("visibilitychange", async () => {
+  if (wakeLock !== null && document.visibilityState === "visible") {
+    await requestWakeLock();
+  }
+});
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js");
+}
+
+// Activate it as soon as the app loads
+requestWakeLock();
+
+
+
+================================================
+FILE: index.html
+================================================
+<!--================================================
+FILE: index.html
+================================================-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#d4a373" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sourdough Modular</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Sourdough Companion</h1>
+    </header>
+
+    <main id="app">
+      <sourdough-app></sourdough-app>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
+
+
+
+================================================
+FILE: manifest.json
+================================================
+{
+  "name": "Sourdough Companion",
+  "short_name": "Sourdough",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fcf9f2",
+  "theme_color": "#d4a373",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3211/3211327.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
+
+================================================
+FILE: style.css
+================================================
+/*================================================
+FILE: style.css
+================================================*/
+:root {
+    --bg-color: #fcf9f2;
+    --card-bg: #ffffff;
+    --primary: #d4a373;
+    --secondary: #a98467;
+    --danger: #e63946;
+    --text: #333;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+#app {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header { text-align: center; margin-bottom: 20px; }
+
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+input, textarea {
+    width: 80px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+textarea {
+    width: 100%;
+    margin-top: 15px;
+    resize: none;
+    background: #fdfdfd;
+    font-family: inherit;
+    font-size: 0.9rem;
+    min-height: 80px;
+}
+
+textarea:focus { outline: none; border-color: var(--primary); }
+
+.hydration-badge {
+    text-align: center;
+    font-weight: bold;
+    color: var(--secondary);
+    margin-top: 10px;
+    font-size: 1.2rem;
+}
+
+.timer-display {
+    font-size: 3.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.stat-box { text-align: center; }
+.stat-box .value { display: block; font-size: 2rem; font-weight: bold; }
+
+.controls { display: grid; gap: 10px; }
+
+button {
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+button:active { opacity: 0.7; }
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-secondary { background: var(--secondary); color: white; }
+.btn-danger {
+    background: transparent;
+    color: var(--danger);
+    width: auto;
+    margin: 20px auto;
+    display: block;
+}
+.btn-reset {
+    display: block;
+    margin: 40px auto;
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    text-align: center;
+}
+.btn-reset:hover { text-decoration: underline; }
+
+/* Helper for preview thumbnails on the Review step */
+.photo-thumb {
+    width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+
+
+================================================
+FILE: sw.js
+================================================
+const CACHE_NAME = 'sourdough-v1';
+const ASSETS = [
+  './',
+  './index.html',
+  './style.css',
+  './app.js',
+  './js/Store.js'
+];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+});
+
+self.addEventListener('fetch', (e) => {
+  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+});
+
+
+================================================
+FILE: js/Store.js
+================================================
+//================================================
+// FILE: js/Store.js
+//================================================
+export const Store = {
+  state:
+    JSON.parse(localStorage.getItem('sourdoughState')) ||
+    {
+      // Navigation
+      step: 'welcome',
+      userName: null,
+
+      // Recipe data
+      flour: 500,
+      water: 350,
+      starter: 100,
+      loaves: 1,
+
+      // Bulk fermentation
+      bulkRest: 30,          // minutes before first fold
+      bulkTimerEnd: null,    // timestamp
+
+      // Folding
+      numFolds: 4,
+      foldInterval: 15,      // minutes between folds
+      foldsConfigured: false,
+      foldsDone: 0,
+      foldLogs: [],          // [{fold, note, timestamp}]
+      nextFoldTime: null,    // timestamp for the next fold countdown
+
+      // Baking
+      bakeDuration: 30,      // minutes
+      bakeEndTime: null,
+      bakeFinished: false,
+
+      // Media & final notes
+      photos: [],            // baseâ€‘64 strings
+      notes: '',
+      temp: '',
+
+      // Compatibility with legacy components
+      folds: 0,
+      timerEndTime: null,
+    },
+
+  update(updates) {
+    this.state = { ...this.state, ...updates };
+    localStorage.setItem('sourdoughState', JSON.stringify(this.state));
+    window.dispatchEvent(new CustomEvent('stateChange', { detail: this.state }));
+  },
+
+  reset() {
+    localStorage.removeItem('sourdoughState');
+    location.reload();
+  },
+};
+
+
+
+================================================
+FILE: js/Components/AppShell.js
+================================================
+//================================================
+// FILE: js/Components/AppShell.js
+//================================================
+import { Store } from '../Store.js';
+import './WelcomeScreen.js';
+import './Calculator.js';
+import './BulkRest.js';
+import './FoldingStep.js';
+import './BakingStep.js';
+import './ReviewStep.js';
+
+class SourdoughApp extends HTMLElement {
+  constructor() {
+    super();
+    this.stateListener = this.render.bind(this);
+  }
+
+  connectedCallback() {
+    window.addEventListener('stateChange', this.stateListener);
+    this.render();
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('stateChange', this.stateListener);
+  }
+
+  render() {
+    const step = Store.state.step || 'welcome';
+    this.innerHTML = ''; // clear any previous child
+
+    let tag = '';
+    switch (step) {
+      case 'welcome':   tag = 'welcome-screen';   break;
+      case 'calculator':tag = 'sourdough-calculator'; break;
+      case 'bulk':      tag = 'bulk-rest';       break;
+      case 'fold':      tag = 'folding-step';    break;
+      case 'baking':    tag = 'baking-step';     break;
+      case 'review':    tag = 'review-step';     break;
+      default:          tag = 'welcome-screen';
+    }
+
+    const el = document.createElement(tag);
+    this.appendChild(el);
+  }
+}
+customElements.define('sourdough-app', SourdoughApp);
+
+
+
+================================================
+FILE: js/Components/BakingStep.js
+================================================
+//================================================
+// FILE: js/Components/BakingStep.js
+//================================================
+import { Store } from '../Store.js';
+
+class BakingStep extends HTMLElement {
+  constructor() {
+    super();
+    this.intervalId = null;
+    this.stateListener = this.render.bind(this);
+  }
+
+  connectedCallback() {
+    window.addEventListener('stateChange', this.stateListener);
+    this.render();
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('stateChange', this.stateListener);
+    clearInterval(this.intervalId);
+  }
+
+  /*** TIMER ***/
+  startBakingTimer() {
+    const minutes = Store.state.bakeDuration || 30;
+    const end = Date.now() + minutes * 60 * 1000;
+    Store.update({ bakeEndTime: end, bakeFinished: false });
+    this.resumeTimer();
+  }
+
+  resumeTimer() {
+    if (!Store.state.bakeEndTime) return;
+    clearInterval(this.intervalId);
+    this.updateCountdown();
+    this.intervalId = setInterval(() => this.updateCountdown(), 1000);
+  }
+
+  updateCountdown() {
+    const remaining = Store.state.bakeEndTime - Date.now();
+    const display = this.querySelector('#bake-countdown');
+    if (remaining <= 0) {
+      clearInterval(this.intervalId);
+      Store.update({ bakeEndTime: null, bakeFinished: true });
+      alert('Bread is ready! Take it out of the oven.');
+    } else if (display) {
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      display.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+  }
+
+  /*** RENDER ***/
+  render() {
+    const { bakeDuration = 30, bakeEndTime, bakeFinished } = Store.state;
+    const timerActive = !!bakeEndTime;
+
+    this.innerHTML = `
+      <section class="card">
+        <h2>4. Baking</h2>
+        ${timerActive
+          ? `<div>Time remaining: <span id="bake-countdown"></span></div>`
+          : `<div class="input-group"><label>Bake time (minutes)</label>
+               <input type="number" id="bake-input" min="1" value="${bakeDuration}">
+             </div>`
+        }
+        <button id="btn-bake" class="btn-primary">
+          ${timerActive ? 'Timer Running...' : 'Start Oven Timer'}
+        </button>
+        ${bakeFinished ? `<button id="btn-finish" class="btn-secondary" style="margin-top:15px;">Finish Baking</button>` : ''}
+      </section>
+    `;
+
+    if (!timerActive) {
+      const input = this.querySelector('#bake-input');
+      input.oninput = (e) => {
+        const val = Math.max(1, parseInt(e.target.value, 10) || 1);
+        Store.update({ bakeDuration: val });
+      };
+      this.querySelector('#btn-bake').onclick = () => this.startBakingTimer();
+    } else {
+      this.querySelector('#btn-bake').disabled = true;
+      this.resumeTimer();
+    }
+
+    if (bakeFinished) {
+      this.querySelector('#btn-finish').onclick = () => {
+        Store.update({ step: 'review' });
+      };
+    }
+  }
+}
+customElements.define('baking-step', BakingStep);
+
+
+
+================================================
+FILE: js/Components/BulkRest.js
+================================================
+//================================================
+// FILE: js/Components/BulkRest.js
+//================================================
+import { Store } from '../Store.js';
+
+class BulkRest extends HTMLElement {
+  constructor() {
+    super();
+    this.intervalId = null;
+  }
+
+  connectedCallback() {
+    this.render();
+  }
+
+  disconnectedCallback() {
+    clearInterval(this.intervalId);
+  }
+
+  startTimer() {
+    const minutes = Store.state.bulkRest || 30;
+    const end = Date.now() + minutes * 60 * 1000;
+    Store.update({ bulkTimerEnd: end });
+    this.resumeTimer();
+  }
+
+  resumeTimer() {
+    if (!Store.state.bulkTimerEnd) return;
+    clearInterval(this.intervalId);
+    this.updateCountdown();               // immediate update
+    this.intervalId = setInterval(() => this.updateCountdown(), 1000);
+  }
+
+  updateCountdown() {
+    const remaining = Store.state.bulkTimerEnd - Date.now();
+    const display = this.querySelector('#bulk-countdown');
+    if (remaining <= 0) {
+      clearInterval(this.intervalId);
+      Store.update({ bulkTimerEnd: null, step: 'fold' });
+      alert('Bulk rest complete! Time for the first fold.');
+    } else if (display) {
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      display.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+  }
+
+  render() {
+    const timerActive = !!Store.state.bulkTimerEnd;
+    const bulk = Store.state.bulkRest || 30;
+
+    this.innerHTML = `
+      <section class="card">
+        <h2>2. Bulk Fermentation</h2>
+        ${timerActive
+          ? `<div>Time remaining: <span id="bulk-countdown"></span></div>`
+          : `<div class="input-group">
+               <label>Rest before first fold (minutes)</label>
+               <input type="number" id="bulk-input" min="0" value="${bulk}">
+             </div>`
+        }
+        <button id="btn-start-bulk" class="btn-primary">
+          ${timerActive ? 'Timer Running...' : 'Start Timer'}
+        </button>
+      </section>
+    `;
+
+    if (!timerActive) {
+      const input = this.querySelector('#bulk-input');
+      input.oninput = (e) => {
+        const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+        Store.update({ bulkRest: val });
+      };
+      this.querySelector('#btn-start-bulk').onclick = () => this.startTimer();
+    } else {
+      // Timer already running â€“ disable button & start countdown display
+      this.querySelector('#btn-start-bulk').disabled = true;
+      this.resumeTimer();
+    }
+  }
+}
+customElements.define('bulk-rest', BulkRest);
+
+
+
+================================================
+FILE: js/Components/Calculator.js
+================================================
+//================================================
+// FILE: js/Components/Calculator.js
+//================================================
+import { Store } from '../Store.js';
+
+class SourdoughCalculator extends HTMLElement {
+  constructor() {
+    super();
+    this.updateHydrationBound = this.updateHydration.bind(this);
+  }
+
+  connectedCallback() {
+    this.render();
+    window.addEventListener('stateChange', this.updateHydrationBound);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('stateChange', this.updateHydrationBound);
+  }
+
+  updateHydration() {
+    const { flour, water, starter } = Store.state;
+    const totalWater = water + starter / 2;
+    const totalFlour = flour + starter / 2;
+    const hydration = totalFlour > 0 ? (totalWater / totalFlour) * 100 : 0;
+    const badge = this.querySelector('#h-val');
+    if (badge) badge.innerText = hydration.toFixed(1);
+  }
+
+  render() {
+    const { flour, water, starter, loaves } = Store.state;
+    this.innerHTML = `
+      <section class="card">
+        <h2>1. Recipe Calculator</h2>
+        <div class="input-group">
+          <label>Flour (g)</label>
+          <input type="number" id="f" min="0" value="${flour}">
+        </div>
+        <div class="input-group">
+          <label>Water (g)</label>
+          <input type="number" id="w" min="0" value="${water}">
+        </div>
+        <div class="input-group">
+          <label>Starter (g)</label>
+          <input type="number" id="s" min="0" value="${starter}">
+        </div>
+        <div class="input-group">
+          <label>Loaves</label>
+          <input type="number" id="l" min="1" value="${loaves}">
+        </div>
+        <div class="hydration-badge">
+          Hydration: <span id="h-val">0</span>%
+        </div>
+        <button id="btn-next" class="btn-primary" style="margin-top:15px;">Next</button>
+      </section>
+    `;
+
+    // Handle changes to any input
+    this.querySelectorAll('input').forEach(input => {
+      input.oninput = (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        switch (e.target.id) {
+          case 'f': Store.update({ flour: val }); break;
+          case 'w': Store.update({ water: val }); break;
+          case 's': Store.update({ starter: val }); break;
+          case 'l': Store.update({ loaves: Math.max(1, Math.floor(val)) }); break;
+        }
+      };
+    });
+
+    // Next button â†’ bulkâ€‘fermentation step
+    this.querySelector('#btn-next').onclick = () => {
+      Store.update({ step: 'bulk' });
+    };
+
+    this.updateHydration();
+  }
+}
+customElements.define('sourdough-calculator', SourdoughCalculator);
+
+
+
+================================================
+FILE: js/Components/EnvironmentLog.js
+================================================
+import { Store } from '../Store.js';
+
+class EnvironmentLog extends HTMLElement {
+    connectedCallback() {
+        this.render();
+        // Sync if the state changes elsewhere (like a reset)
+        window.addEventListener('stateChange', () => {
+            const tempInput = this.querySelector('#temp');
+            const notesInput = this.querySelector('#notes');
+            if (tempInput) tempInput.value = Store.state.temp;
+            if (notesInput) notesInput.value = Store.state.notes;
+        });
+    }
+
+    render() {
+        this.innerHTML = `
+            <section class="card">
+                <h2>4. Environment & Notes</h2>
+                <div class="input-group">
+                    <label>Room Temp (Â°C)</label>
+                    <input type="number" id="temp" value="${Store.state.temp}" placeholder="25">
+                </div>
+                <textarea id="notes" placeholder="How does the dough feel? (e.g., sticky, bubbly...)" rows="4">${Store.state.notes}</textarea>
+            </section>
+            <style>
+                textarea {
+                    width: 100%;
+                    margin-top: 15px;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                    font-family: inherit;
+                    font-size: 0.9rem;
+                    resize: none;
+                    box-sizing: border-box;
+                    background: #fdfdfd;
+                }
+                textarea:focus {
+                    outline: none;
+                    border-color: var(--primary);
+                }
+            </style>
+        `;
+
+        // Save data to Store as she types
+        this.querySelector('#temp').oninput = (e) => {
+            Store.update({ temp: e.target.value }); 
+        };
+
+        this.querySelector('#notes').oninput = (e) => {
+            Store.update({ notes: e.target.value }); 
+        };
+    }
+}
+customElements.define('environment-log', EnvironmentLog);
+
+
+================================================
+FILE: js/Components/FoldingStep.js
+================================================
+//================================================
+// FILE: js/Components/FoldingStep.js
+//================================================
+import { Store } from '../Store.js';
+
+class FoldingStep extends HTMLElement {
+  constructor() {
+    super();
+    this.intervalId = null;
+    this.stateListener = this.render.bind(this);
+  }
+
+  connectedCallback() {
+    window.addEventListener('stateChange', this.stateListener);
+    this.render();
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('stateChange', this.stateListener);
+    clearInterval(this.intervalId);
+  }
+
+  /*** TIMER BETWEEN FOLDS ***/
+  startTimerForNextFold() {
+    const minutes = Store.state.foldInterval || 15;
+    const intervalMs = minutes * 60 * 1000;
+    clearInterval(this.intervalId);
+    Store.update({ nextFoldTime: Date.now() + intervalMs });
+    this.updateCountdown();
+    this.intervalId = setInterval(() => this.updateCountdown(), 1000);
+  }
+
+  updateCountdown() {
+    const remaining = Store.state.nextFoldTime - Date.now();
+    const display = this.querySelector('#fold-countdown');
+    if (!display) return;
+    if (remaining <= 0) {
+      clearInterval(this.intervalId);
+      Store.update({ nextFoldTime: null });
+    } else {
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      display.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+  }
+
+  /*** RENDER ***/
+  render() {
+    const {
+      foldsConfigured,
+      numFolds = 4,
+      foldInterval = 15,
+      foldsDone = 0,
+      nextFoldTime,
+    } = Store.state;
+
+    // ---------- CONFIGURATION UI ----------
+    if (!foldsConfigured) {
+      this.innerHTML = `
+        <section class="card">
+          <h2>3. Folding Setup</h2>
+          <div class="input-group">
+            <label>Number of folds</label>
+            <input type="number" id="folds-num" min="1" value="${numFolds}">
+          </div>
+          <div class="input-group">
+            <label>Interval between folds (minutes)</label>
+            <input type="number" id="folds-interval" min="0" value="${foldInterval}">
+          </div>
+          <button id="btn-start-folding" class="btn-primary">Start Folding</button>
+        </section>
+      `;
+
+      const foldsInput = this.querySelector('#folds-num');
+      const intervalInput = this.querySelector('#folds-interval');
+
+      foldsInput.oninput = (e) => {
+        const v = Math.max(1, parseInt(e.target.value, 10) || 1);
+        Store.update({ numFolds: v });
+      };
+      intervalInput.oninput = (e) => {
+        const v = Math.max(0, parseInt(e.target.value, 10) || 0);
+        Store.update({ foldInterval: v });
+      };
+      this.querySelector('#btn-start-folding').onclick = () => {
+        Store.update({
+          foldsConfigured: true,
+          foldsDone: 0,
+          foldLogs: [],
+          nextFoldTime: null,
+        });
+      };
+      return; // keep config UI only
+    }
+
+    // ---------- FOLDING UI ----------
+    const currentFold = foldsDone + 1;
+    const waiting = !!nextFoldTime;
+    const allDone = foldsDone >= numFolds;
+
+    this.innerHTML = `
+      <section class="card">
+        <h2>3. Folding ${currentFold} of ${numFolds}</h2>
+        ${waiting
+          ? `<div>Next fold in: <span id="fold-countdown"></span></div>`
+          : `${!allDone ? `<button id="btn-do-fold" class="btn-primary">Perform Fold #${currentFold}</button>` : ''}`
+        }
+        <div id="fold-log-section" style="margin-top:15px;"></div>
+        ${allDone ? `<button id="btn-to-baking" class="btn-secondary" style="margin-top:15px;">Proceed to Baking</button>` : ''}
+      </section>
+    `;
+
+    // If we are waiting for the interval â†’ start the countdown
+    if (waiting) {
+      clearInterval(this.intervalId);
+      this.updateCountdown();
+      this.intervalId = setInterval(() => this.updateCountdown(), 1000);
+    }
+
+    // If the user can perform a fold now
+    if (!waiting && !allDone) {
+      this.querySelector('#btn-do-fold').onclick = () => {
+        const note = prompt(`Add a note for Fold #${currentFold} (optional)`);
+        const logEntry = {
+          fold: currentFold,
+          note: note || '',
+          timestamp: Date.now(),
+        };
+        const updatedLogs = [...Store.state.foldLogs, logEntry];
+        Store.update({
+          foldsDone: currentFold,
+          foldLogs: updatedLogs,
+        });
+
+        // If there are still folds left, start the interval timer
+        if (currentFold < Store.state.numFolds) {
+          this.startTimerForNextFold();
+        }
+      };
+    }
+
+    // After all folds â†’ go to baking step
+    if (allDone) {
+      this.querySelector('#btn-to-baking').onclick = () => {
+        Store.update({ step: 'baking' });
+      };
+    }
+  }
+}
+customElements.define('folding-step', FoldingStep);
+
+
+
+================================================
+FILE: js/Components/ReviewStep.js
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x9d in position 2201: character maps to <undefined>
+
+
+================================================
+FILE: js/Components/Scheduler.js
+================================================
+import { Store } from '../Store.js';
+
+class SourdoughScheduler extends HTMLElement {
+    connectedCallback() {
+        this.render();
+        // Update the schedule whenever the timer or start time changes
+        window.addEventListener('stateChange', () => this.render());
+    }
+
+    formatTime(ms) {
+        return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    render() {
+        // Base the start time on when the 30m timer was first clicked, 
+        // or just use 'Now' if no timer is active.
+        const startTime = Store.state.timerEndTime ? (Store.state.timerEndTime - (30 * 60 * 1000)) : Date.now();
+        
+        // Typical sourdough stage durations (in milliseconds)
+        const offsets = {
+            autolyse: 45 * 60000,
+            bulkEnd: 4.5 * 60 * 60000,
+            coldProof: 5.5 * 60 * 60000,
+            baking: 20 * 60 * 60000 // Ready for oven roughly 20h later
+        };
+
+        this.innerHTML = `
+            <section class="card">
+                <h2>3. Predicted Schedule</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span>Autolyse Ends</span>
+                        <strong>${this.formatTime(startTime + offsets.autolyse)}</strong>
+                    </div>
+                    <div class="timeline-item">
+                        <span>Bulk Ferment End</span>
+                        <strong>${this.formatTime(startTime + offsets.bulkEnd)}</strong>
+                    </div>
+                    <div class="timeline-item">
+                        <span>Cold Proof Start</span>
+                        <strong>${this.formatTime(startTime + offsets.coldProof)}</strong>
+                    </div>
+                    <div class="timeline-item">
+                        <span>Oven Ready (Est.)</span>
+                        <strong>${this.formatTime(startTime + offsets.baking)}</strong>
+                    </div>
+                </div>
+            </section>
+            <style>
+                .timeline { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+                .timeline-item { 
+                    display: flex; 
+                    justify-content: space-between; 
+                    padding-bottom: 8px; 
+                    border-bottom: 1px dashed #ddd; 
+                }
+                .timeline-item span { color: #666; font-size: 0.9rem; }
+                .timeline-item strong { color: var(--secondary); }
+            </style>
+        `;
+    }
+}
+customElements.define('sourdough-scheduler', SourdoughScheduler);
+
+
+================================================
+FILE: js/Components/Timer.js
+================================================
+import { Store } from '../Store.js';
+
+class SourdoughTimer extends HTMLElement {
+    connectedCallback() {
+        this.render();
+        if (Store.state.timerEndTime) this.resumeTimer();
+    }
+
+    resumeTimer() {
+        this.interval = setInterval(() => {
+            const remaining = Store.state.timerEndTime - Date.now();
+            if (remaining <= 0) {
+                clearInterval(this.interval);
+                Store.update({ timerEndTime: null });
+                alert("Time to fold!");
+                this.render();
+            } else {
+                this.updateDisplay(remaining);
+            }
+        }, 1000);
+    }
+
+    updateDisplay(ms) {
+        const m = Math.floor(ms / 60000);
+        const s = Math.floor((ms % 60000) / 1000);
+        const clock = this.querySelector('#timer-display');
+        if(clock) clock.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    render() {
+        this.innerHTML = `
+            <section class="card">
+                <h2>2. Bulk Fermentation</h2>
+                <div class="timer-display" id="timer-display">30:00</div>
+                <div class="stats">
+                    <div class="stat-box">
+                        <span class="label">Folds</span>
+                        <span class="value" id="fold-val">${Store.state.folds}</span>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button id="btn-timer" class="btn-primary">Start 30m Timer</button>
+                    <button id="btn-fold" class="btn-secondary">Record Fold</button>
+                </div>
+            </section>
+        `;
+
+        this.querySelector('#btn-timer').onclick = () => {
+            Store.update({ timerEndTime: Date.now() + (30 * 60 * 1000) });
+            this.resumeTimer();
+        };
+
+        this.querySelector('#btn-fold').onclick = () => {
+            Store.update({ folds: Store.state.folds + 1 });
+            this.querySelector('#fold-val').innerText = Store.state.folds;
+        };
+    }
+}
+customElements.define('sourdough-timer', SourdoughTimer);
+
+
+================================================
+FILE: js/Components/WelcomeScreen.js
+================================================
+//================================================
+// FILE: js/Components/WelcomeScreen.js
+//================================================
+import { Store } from '../Store.js';
+
+class WelcomeScreen extends HTMLElement {
+  connectedCallback() {
+    this.render();
+  }
+
+  render() {
+    const name = Store.state.userName ? `, ${Store.state.userName}` : '';
+    this.innerHTML = `
+      <section class="card">
+        <h2>Welcome${name}!</h2>
+        <p>Ready to bake some sourdough?</p>
+        <button id="btn-start" class="btn-primary">Start</button>
+      </section>
+    `;
+
+    this.querySelector('#btn-start').onclick = () => {
+      // Firstâ€‘time secret name
+      if (!Store.state.userName) {
+        const secret = prompt('Choose a secret name for your baking sessions:');
+        if (!secret) return; // user cancelled
+        Store.update({ userName: secret });
+      }
+      Store.update({ step: 'calculator' });
+    };
+  }
+}
+customElements.define('welcome-screen', WelcomeScreen);
+
+
