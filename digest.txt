@@ -1,11 +1,13 @@
 Directory structure:
 └── sardo/
+    ├── README.md
     ├── app.js
     ├── index.html
     ├── manifest.json
     ├── style.css
     ├── sw.js
     └── js/
+        ├── notification.js
         ├── Store.js
         └── Components/
             ├── AppShell.js
@@ -16,8 +18,16 @@ Directory structure:
             ├── FoldingStep.js
             ├── ReviewStep.js
             ├── Scheduler.js
+            ├── Settings.js
             ├── Timer.js
             └── WelcomeScreen.js
+
+================================================
+FILE: README.md
+================================================
+"# sardo" 
+
+
 
 ================================================
 FILE: app.js
@@ -123,165 +133,295 @@ FILE: style.css
 FILE: style.css
 ================================================*/
 :root {
-    --bg-color: #fcf9f2;
-    --card-bg: #ffffff;
-    --primary: #d4a373;
-    --secondary: #a98467;
-    --danger: #e63946;
-    --text: #333;
+  --bg-color: #fcf9f2;
+  --card-bg: #ffffff;
+  --primary: #d4a373;
+  --secondary: #a98467;
+  --danger: #e63946;
+  --text: #333;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text);
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text);
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
 }
 
 #app {
-    width: 100%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-header { text-align: center; margin-bottom: 20px; }
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
 .card {
-    background: var(--card-bg);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-    width: 100%;
-    box-sizing: border-box;
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-input, textarea {
-    width: 80px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    box-sizing: border-box;
+input,
+textarea {
+  width: 80px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
 }
 
 textarea {
-    width: 100%;
-    margin-top: 15px;
-    resize: none;
-    background: #fdfdfd;
-    font-family: inherit;
-    font-size: 0.9rem;
-    min-height: 80px;
+  width: 100%;
+  margin-top: 15px;
+  resize: none;
+  background: #fdfdfd;
+  font-family: inherit;
+  font-size: 0.9rem;
+  min-height: 80px;
 }
 
-textarea:focus { outline: none; border-color: var(--primary); }
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
 
 .hydration-badge {
-    text-align: center;
-    font-weight: bold;
-    color: var(--secondary);
-    margin-top: 10px;
-    font-size: 1.2rem;
+  text-align: center;
+  font-weight: bold;
+  color: var(--secondary);
+  margin-top: 10px;
+  font-size: 1.2rem;
 }
 
 .timer-display {
-    font-size: 3.5rem;
-    font-weight: bold;
-    text-align: center;
-    margin: 20px 0;
-    font-variant-numeric: tabular-nums;
+  font-size: 3.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 20px 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .stats {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-.stat-box { text-align: center; }
-.stat-box .value { display: block; font-size: 2rem; font-weight: bold; }
+.stat-box {
+  text-align: center;
+}
+.stat-box .value {
+  display: block;
+  font-size: 2rem;
+  font-weight: bold;
+}
 
-.controls { display: grid; gap: 10px; }
+.controls {
+  display: grid;
+  gap: 10px;
+}
 
 button {
-    padding: 15px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.2s;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
-button:active { opacity: 0.7; }
+button:active {
+  opacity: 0.7;
+}
 
-.btn-primary { background: var(--primary); color: white; }
-.btn-secondary { background: var(--secondary); color: white; }
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.btn-secondary {
+  background: var(--secondary);
+  color: white;
+}
 .btn-danger {
-    background: transparent;
-    color: var(--danger);
-    width: auto;
-    margin: 20px auto;
-    display: block;
+  background: transparent;
+  color: var(--danger);
+  width: auto;
+  margin: 20px auto;
+  display: block;
 }
 .btn-reset {
-    display: block;
-    margin: 40px auto;
-    background: none;
-    border: none;
-    color: var(--danger);
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 10px 20px;
-    text-align: center;
+  display: block;
+  margin: 40px auto;
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  text-align: center;
 }
-.btn-reset:hover { text-decoration: underline; }
+.btn-reset:hover {
+  text-decoration: underline;
+}
 
 /* Helper for preview thumbnails on the Review step */
 .photo-thumb {
-    width: 100%;
-    max-height: 250px;
-    object-fit: contain;
-    border-radius: 8px;
-    margin-bottom: 10px;
+  width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
+
+/* -------------------------------------------------------------
+   Toast / notification styling
+   ------------------------------------------------------------- */
+.notification {
+    padding: 12px 16px;
+    border-radius: 6px;
+    color: #fff;
+    background: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 0.95rem;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+.notification.info    { background: var(--primary); }
+.notification.success { background: #28a745; }          /* green  */
+.notification.warning { background: #ffc107; color:#212529; } /* yellow */
+.notification.error   { background: var(--danger); }
+
 
 
 
 ================================================
 FILE: sw.js
 ================================================
-const CACHE_NAME = 'sourdough-v1';
+// ------------------------------------------------
+// sw.js – new version (v2)
+// ------------------------------------------------
+const CACHE_NAME = 'sourdough-v2';            // ← bump version
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
-  './js/Store.js'
+  './js/Store.js',
+  // IMPORTANT: cache every component we load so the new HTML is always paired
+  './js/Components/AppShell.js',
+  './js/Components/WelcomeScreen.js',
+  './js/Components/Calculator.js',
+  './js/Components/BulkRest.js',
+  './js/Components/FoldingStep.js',
+  './js/Components/BakingStep.js',
+  './js/Components/ReviewStep.js',
+  './js/Components/EnvironmentLog.js',
+  './js/Components/Scheduler.js',
+  './js/Components/Timer.js'
 ];
 
+// Install → cache everything
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  ).then(() => self.skipWaiting()); // activate immediately
 });
 
-self.addEventListener('fetch', (e) => {
-  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+// Activate → delete old caches
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    ))
+  );
+  self.clients.claim();
 });
+
+// Fetch → network‑first, fall back to cache
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    fetch(e.request)
+      .then(res => {
+        // Update cache with fresh response
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
+  );
+});
+
+
+
+================================================
+FILE: js/notification.js
+================================================
+/* -------------------------------------------------------------
+   js/notification.js
+   Simple onâ€‘screen toast/notification system.
+   Usage:
+       import { notify } from './notification.js';
+       notify('Your message', 'info'|'success'|'warning'|'error');
+   ------------------------------------------------------------- */
+export function notify(message, type = 'info', timeout = 3000) {
+  // Ensure a container exists
+  let container = document.getElementById('notification-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'notification-container';
+    container.style.position = 'fixed';
+    container.style.top = '12px';
+    container.style.right = '12px';
+    container.style.zIndex = '9999';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '8px';
+    document.body.appendChild(container);
+  }
+
+  // Create the toast
+  const toast = document.createElement('div');
+  toast.className = `notification ${type}`;
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  toast.style.transition = 'opacity 0.3s ease';
+
+  container.appendChild(toast);
+
+  // Autoâ€‘remove after timeout
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, timeout);
+}
+
 
 
 ================================================
@@ -292,37 +432,37 @@ FILE: js/Store.js
 //================================================
 export const Store = {
   state:
-    JSON.parse(localStorage.getItem('sourdoughState')) ||
-    {
-      // Navigation
+    JSON.parse(localStorage.getItem('sourdoughState')) || {
+      // ── Navigation ─────────────────────
       step: 'welcome',
       userName: null,
+      history: [],                     // ← array of finished bakes
 
-      // Recipe data
+      // ── Recipe data ───────────────────
       flour: 500,
       water: 350,
       starter: 100,
       loaves: 1,
 
-      // Bulk fermentation
-      bulkRest: 30,          // minutes before first fold
-      bulkTimerEnd: null,    // timestamp
+      // ── Bulk fermentation ─────────────
+      bulkRest: 30,
+      bulkTimerEnd: null,
 
-      // Folding
+      // ── Folding ───────────────────────
       numFolds: 4,
-      foldInterval: 15,      // minutes between folds
+      foldInterval: 15,
       foldsConfigured: false,
       foldsDone: 0,
-      foldLogs: [],          // [{fold, note, timestamp}]
-      nextFoldTime: null,    // timestamp for the next fold countdown
+      foldLogs: [],         // [{fold, note, timestamp}]
+      nextFoldTime: null,
 
-      // Baking
-      bakeDuration: 30,      // minutes
+      // ── Baking ────────────────────────
+      bakeDuration: 30,
       bakeEndTime: null,
       bakeFinished: false,
 
-      // Media & final notes
-      photos: [],            // baseâ€‘64 strings
+      // ── Media & notes ─────────────────
+      photos: [],            // Base‑64 strings
       notes: '',
       temp: '',
 
@@ -341,6 +481,37 @@ export const Store = {
     localStorage.removeItem('sourdoughState');
     location.reload();
   },
+
+  // -------------------------------------------------
+  // Clears **only** the active bake, keeping the secret
+  // name and the history of past sessions.
+  // -------------------------------------------------
+  clearActive() {
+    const defaults = {
+      step: 'welcome',
+      flour: 500,
+      water: 350,
+      starter: 100,
+      loaves: 1,
+      bulkRest: 30,
+      bulkTimerEnd: null,
+      numFolds: 4,
+      foldInterval: 15,
+      foldsConfigured: false,
+      foldsDone: 0,
+      foldLogs: [],
+      nextFoldTime: null,
+      bakeDuration: 30,
+      bakeEndTime: null,
+      bakeFinished: false,
+      photos: [],
+      notes: '',
+      temp: '',
+      folds: 0,
+      timerEndTime: null,
+    };
+    this.update(defaults);
+  },
 };
 
 
@@ -354,10 +525,14 @@ FILE: js/Components/AppShell.js
 import { Store } from '../Store.js';
 import './WelcomeScreen.js';
 import './Calculator.js';
+import './Settings.js';           // ← NEW
 import './BulkRest.js';
 import './FoldingStep.js';
 import './BakingStep.js';
 import './ReviewStep.js';
+import './EnvironmentLog.js';
+import './Scheduler.js';
+import './Timer.js';
 
 class SourdoughApp extends HTMLElement {
   constructor() {
@@ -376,12 +551,13 @@ class SourdoughApp extends HTMLElement {
 
   render() {
     const step = Store.state.step || 'welcome';
-    this.innerHTML = ''; // clear any previous child
+    this.innerHTML = '';
 
     let tag = '';
     switch (step) {
       case 'welcome':   tag = 'welcome-screen';   break;
       case 'calculator':tag = 'sourdough-calculator'; break;
+      case 'settings':  tag = 'sourdough-settings'; break;   // ← NEW
       case 'bulk':      tag = 'bulk-rest';       break;
       case 'fold':      tag = 'folding-step';    break;
       case 'baking':    tag = 'baking-step';     break;
@@ -403,7 +579,8 @@ FILE: js/Components/BakingStep.js
 //================================================
 // FILE: js/Components/BakingStep.js
 //================================================
-import { Store } from '../Store.js';
+import { Store } from "../Store.js";
+import { notify } from "../notification.js";
 
 class BakingStep extends HTMLElement {
   constructor() {
@@ -413,12 +590,12 @@ class BakingStep extends HTMLElement {
   }
 
   connectedCallback() {
-    window.addEventListener('stateChange', this.stateListener);
+    window.addEventListener("stateChange", this.stateListener);
     this.render();
   }
 
   disconnectedCallback() {
-    window.removeEventListener('stateChange', this.stateListener);
+    window.removeEventListener("stateChange", this.stateListener);
     clearInterval(this.intervalId);
   }
 
@@ -439,15 +616,15 @@ class BakingStep extends HTMLElement {
 
   updateCountdown() {
     const remaining = Store.state.bakeEndTime - Date.now();
-    const display = this.querySelector('#bake-countdown');
+    const display = this.querySelector("#bake-countdown");
     if (remaining <= 0) {
       clearInterval(this.intervalId);
       Store.update({ bakeEndTime: null, bakeFinished: true });
-      alert('Bread is ready! Take it out of the oven.');
+      notify("Bread is ready! Take it out of the oven.", "success");
     } else if (display) {
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);
-      display.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      display.textContent = `${mins}:${secs < 10 ? "0" : ""}${secs}`;
     }
   }
 
@@ -459,39 +636,55 @@ class BakingStep extends HTMLElement {
     this.innerHTML = `
       <section class="card">
         <h2>4. Baking</h2>
-        ${timerActive
-          ? `<div>Time remaining: <span id="bake-countdown"></span></div>`
-          : `<div class="input-group"><label>Bake time (minutes)</label>
+        ${
+          timerActive
+            ? `<div>Time remaining: <span id="bake-countdown"></span></div>`
+            : `<div class="input-group"><label>Bake time (minutes)</label>
                <input type="number" id="bake-input" min="1" value="${bakeDuration}">
              </div>`
         }
-        <button id="btn-bake" class="btn-primary">
-          ${timerActive ? 'Timer Running...' : 'Start Oven Timer'}
-        </button>
-        ${bakeFinished ? `<button id="btn-finish" class="btn-secondary" style="margin-top:15px;">Finish Baking</button>` : ''}
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+          <button id="btn-bake" class="btn-primary">
+            ${timerActive ? "Timer Running..." : "Start Oven Timer"}
+          </button>
+        </div>
+        ${bakeFinished ? `<button id="btn-finish" class="btn-secondary" style="margin-top:15px;">Finish Baking</button>` : ""}
       </section>
     `;
 
+    // Back â†’ Folding
+    this.querySelector("#btn-back").onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ step: "fold" });
+    };
+    // Skip â†’ Review (bypass baking timer)
+    this.querySelector("#btn-skip").onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ bakeEndTime: null, bakeFinished: false, step: "review" });
+    };
+
     if (!timerActive) {
-      const input = this.querySelector('#bake-input');
+      const input = this.querySelector("#bake-input");
       input.oninput = (e) => {
         const val = Math.max(1, parseInt(e.target.value, 10) || 1);
         Store.update({ bakeDuration: val });
       };
-      this.querySelector('#btn-bake').onclick = () => this.startBakingTimer();
+      this.querySelector("#btn-bake").onclick = () => this.startBakingTimer();
     } else {
-      this.querySelector('#btn-bake').disabled = true;
+      this.querySelector("#btn-bake").disabled = true;
       this.resumeTimer();
     }
 
     if (bakeFinished) {
-      this.querySelector('#btn-finish').onclick = () => {
-        Store.update({ step: 'review' });
+      this.querySelector("#btn-finish").onclick = () => {
+        Store.update({ step: "review" });
       };
     }
   }
 }
-customElements.define('baking-step', BakingStep);
+customElements.define("baking-step", BakingStep);
 
 
 
@@ -502,6 +695,7 @@ FILE: js/Components/BulkRest.js
 // FILE: js/Components/BulkRest.js
 //================================================
 import { Store } from '../Store.js';
+import { notify } from '../notification.js';
 
 class BulkRest extends HTMLElement {
   constructor() {
@@ -537,7 +731,7 @@ class BulkRest extends HTMLElement {
     if (remaining <= 0) {
       clearInterval(this.intervalId);
       Store.update({ bulkTimerEnd: null, step: 'fold' });
-      alert('Bulk rest complete! Time for the first fold.');
+      notify('Bulk rest complete! Time for the first fold.', 'info');
     } else if (display) {
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);
@@ -557,13 +751,28 @@ class BulkRest extends HTMLElement {
           : `<div class="input-group">
                <label>Rest before first fold (minutes)</label>
                <input type="number" id="bulk-input" min="0" value="${bulk}">
-             </div>`
-        }
-        <button id="btn-start-bulk" class="btn-primary">
-          ${timerActive ? 'Timer Running...' : 'Start Timer'}
-        </button>
+             </div>`}
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+          <button id="btn-start-bulk" class="btn-primary">
+            ${timerActive ? 'Timer Running...' : 'Start Timer'}
+          </button>
+        </div>
       </section>
     `;
+
+    // Back â†’ Settings
+    this.querySelector('#btn-back').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ step: 'settings' });
+    };
+
+    // Skip â†’ Folding (bypass timer)
+    this.querySelector('#btn-skip').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ bulkTimerEnd: null, step: 'fold' });
+    };
 
     if (!timerActive) {
       const input = this.querySelector('#bulk-input');
@@ -573,7 +782,6 @@ class BulkRest extends HTMLElement {
       };
       this.querySelector('#btn-start-bulk').onclick = () => this.startTimer();
     } else {
-      // Timer already running â€“ disable button & start countdown display
       this.querySelector('#btn-start-bulk').disabled = true;
       this.resumeTimer();
     }
@@ -620,6 +828,7 @@ class SourdoughCalculator extends HTMLElement {
     this.innerHTML = `
       <section class="card">
         <h2>1. Recipe Calculator</h2>
+
         <div class="input-group">
           <label>Flour (g)</label>
           <input type="number" id="f" min="0" value="${flour}">
@@ -636,14 +845,20 @@ class SourdoughCalculator extends HTMLElement {
           <label>Loaves</label>
           <input type="number" id="l" min="1" value="${loaves}">
         </div>
+
         <div class="hydration-badge">
           Hydration: <span id="h-val">0</span>%
         </div>
-        <button id="btn-next" class="btn-primary" style="margin-top:15px;">Next</button>
+
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+          <button id="btn-next" class="btn-primary">Next</button>
+        </div>
       </section>
     `;
 
-    // Handle changes to any input
+    // input handling
     this.querySelectorAll('input').forEach(input => {
       input.oninput = (e) => {
         const val = parseFloat(e.target.value) || 0;
@@ -656,10 +871,10 @@ class SourdoughCalculator extends HTMLElement {
       };
     });
 
-    // Next button â†’ bulkâ€‘fermentation step
-    this.querySelector('#btn-next').onclick = () => {
-      Store.update({ step: 'bulk' });
-    };
+    // navigation buttons
+    this.querySelector('#btn-back').onclick = () => Store.update({ step: 'welcome' });
+    this.querySelector('#btn-skip').onclick = () => Store.update({ step: 'settings' });
+    this.querySelector('#btn-next').onclick = () => Store.update({ step: 'settings' });
 
     this.updateHydration();
   }
@@ -735,6 +950,7 @@ FILE: js/Components/FoldingStep.js
 // FILE: js/Components/FoldingStep.js
 //================================================
 import { Store } from '../Store.js';
+import { notify } from '../notification.js';
 
 class FoldingStep extends HTMLElement {
   constructor() {
@@ -777,7 +993,6 @@ class FoldingStep extends HTMLElement {
     }
   }
 
-  /*** RENDER ***/
   render() {
     const {
       foldsConfigured,
@@ -787,34 +1002,46 @@ class FoldingStep extends HTMLElement {
       nextFoldTime,
     } = Store.state;
 
-    // ---------- CONFIGURATION UI ----------
+    // --------------- CONFIGURATION -----------------
     if (!foldsConfigured) {
       this.innerHTML = `
         <section class="card">
           <h2>3. Folding Setup</h2>
+
           <div class="input-group">
             <label>Number of folds</label>
             <input type="number" id="folds-num" min="1" value="${numFolds}">
           </div>
+
           <div class="input-group">
             <label>Interval between folds (minutes)</label>
             <input type="number" id="folds-interval" min="0" value="${foldInterval}">
           </div>
-          <button id="btn-start-folding" class="btn-primary">Start Folding</button>
+
+          <div class="controls" style="margin-top:15px;">
+            <button id="btn-back" class="btn-secondary">Back</button>
+            <button id="btn-skip" class="btn-secondary">Skip</button>
+            <button id="btn-start-folding" class="btn-primary">Start Folding</button>
+          </div>
         </section>
       `;
 
-      const foldsInput = this.querySelector('#folds-num');
-      const intervalInput = this.querySelector('#folds-interval');
+      // Back â†’ Bulk
+      this.querySelector('#btn-back').onclick = () => Store.update({ step: 'bulk' });
+      // Skip â†’ Baking (skip folding entirely)
+      this.querySelector('#btn-skip').onclick = () => Store.update({ step: 'baking' });
 
-      foldsInput.oninput = (e) => {
+      // Inputs
+      this.querySelector('#folds-num').oninput = (e) => {
         const v = Math.max(1, parseInt(e.target.value, 10) || 1);
         Store.update({ numFolds: v });
       };
-      intervalInput.oninput = (e) => {
+      this.querySelector('#folds-interval').oninput = (e) => {
         const v = Math.max(0, parseInt(e.target.value, 10) || 0);
         Store.update({ foldInterval: v });
       };
+
+      // Start folding â€“ switch to folding UI
       this.querySelector('#btn-start-folding').onclick = () => {
         Store.update({
           foldsConfigured: true,
@@ -823,10 +1050,10 @@ class FoldingStep extends HTMLElement {
           nextFoldTime: null,
         });
       };
-      return; // keep config UI only
+      return; // stop further rendering
     }
 
-    // ---------- FOLDING UI ----------
+    // --------------- FOLDING UI -----------------
     const currentFold = foldsDone + 1;
     const waiting = !!nextFoldTime;
     const allDone = foldsDone >= numFolds;
@@ -838,19 +1065,37 @@ class FoldingStep extends HTMLElement {
           ? `<div>Next fold in: <span id="fold-countdown"></span></div>`
           : `${!allDone ? `<button id="btn-do-fold" class="btn-primary">Perform Fold #${currentFold}</button>` : ''}`
         }
+
         <div id="fold-log-section" style="margin-top:15px;"></div>
+
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+        </div>
+
         ${allDone ? `<button id="btn-to-baking" class="btn-secondary" style="margin-top:15px;">Proceed to Baking</button>` : ''}
       </section>
     `;
 
-    // If we are waiting for the interval â†’ start the countdown
+    // Back â†’ Bulk
+    this.querySelector('#btn-back').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ step: 'bulk' });
+    };
+    // Skip â†’ Baking
+    this.querySelector('#btn-skip').onclick = () => {
+      clearInterval(this.intervalId);
+      Store.update({ step: 'baking' });
+    };
+
+    // Countdown handling
     if (waiting) {
       clearInterval(this.intervalId);
       this.updateCountdown();
       this.intervalId = setInterval(() => this.updateCountdown(), 1000);
     }
 
-    // If the user can perform a fold now
+    // Perform a fold (if we are not waiting)
     if (!waiting && !allDone) {
       this.querySelector('#btn-do-fold').onclick = () => {
         const note = prompt(`Add a note for Fold #${currentFold} (optional)`);
@@ -865,18 +1110,16 @@ class FoldingStep extends HTMLElement {
           foldLogs: updatedLogs,
         });
 
-        // If there are still folds left, start the interval timer
+        // If more folds remain, start interval timer
         if (currentFold < Store.state.numFolds) {
           this.startTimerForNextFold();
         }
       };
     }
 
-    // After all folds â†’ go to baking step
+    // After all folds â†’ go to baking
     if (allDone) {
-      this.querySelector('#btn-to-baking').onclick = () => {
-        Store.update({ step: 'baking' });
-      };
+      this.querySelector('#btn-to-baking').onclick = () => Store.update({ step: 'baking' });
     }
   }
 }
@@ -887,7 +1130,116 @@ customElements.define('folding-step', FoldingStep);
 ================================================
 FILE: js/Components/ReviewStep.js
 ================================================
-Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x9d in position 2201: character maps to <undefined>
+//================================================
+// FILE: js/Components/ReviewStep.js
+//================================================
+import { Store } from '../Store.js';
+import { notify } from '../notification.js';
+
+class ReviewStep extends HTMLElement {
+  constructor() {
+    super();
+    this.stateListener = this.render.bind(this);
+  }
+
+  connectedCallback() {
+    window.addEventListener('stateChange', this.stateListener);
+    this.render();
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('stateChange', this.stateListener);
+  }
+
+  _photoHtml() {
+    return Store.state.photos
+      .map(src => `<img src="${src}" class="photo-thumb" alt="bake photo">`)
+      .join('');
+  }
+
+  render() {
+    const { notes = '' } = Store.state;
+    this.innerHTML = `
+      <section class="card">
+        <h2>5. Review & Save</h2>
+
+        <div class="input-group">
+          <label>Final notes</label>
+          <textarea id="final-notes" rows="4" placeholder="Any final observations...">${notes}</textarea>
+        </div>
+
+        <div class="input-group">
+          <label>Upload photos</label>
+          <input type="file" id="photo-input" accept="image/*" multiple>
+        </div>
+
+        <div id="photo-preview" style="margin-top:15px;">
+          ${this._photoHtml()}
+        </div>
+
+        <button id="btn-save" class="btn-primary" style="margin-top:15px;">Save Session</button>
+        <button id="btn-restart" class="btn-secondary" style="margin-top:15px;">Start New Bake</button>
+      </section>
+    `;
+
+    // Save notes
+    this.querySelector('#final-notes').oninput = (e) => Store.update({ notes: e.target.value });
+
+    // Photo handling (Baseâ€‘64)
+    const fileInput = this.querySelector('#photo-input');
+    fileInput.onchange = (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const updated = [...Store.state.photos, ev.target.result];
+          Store.update({ photos: updated });
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    // Save session â€“ persists in history and returns home
+    this.querySelector('#btn-save').onclick = () => {
+      const {
+        flour,
+        water,
+        starter,
+        loaves,
+        notes,
+        temp,
+        foldLogs,
+        photos,
+      } = Store.state;
+
+      const entry = {
+        timestamp: Date.now(),
+        flour,
+        water,
+        starter,
+        loaves,
+        notes,
+        temp,
+        foldLogs: [...foldLogs],
+        photos: [...photos],
+      };
+
+      const history = Store.state.history || [];
+      Store.update({ history: [...history, entry] });
+
+      // Clear the *active* bake (keeps name & history)
+      Store.clearActive();
+
+      notify('Your bake has been saved. It will appear on the welcome screen.', 'success');
+      Store.update({ step: 'welcome' });
+    };
+
+    // Restart â€“ clears active bake (keeps name & history)
+    this.querySelector('#btn-restart').onclick = () => Store.clearActive();
+  }
+}
+customElements.define('review-step', ReviewStep);
+
 
 
 ================================================
@@ -959,67 +1311,146 @@ customElements.define('sourdough-scheduler', SourdoughScheduler);
 
 
 ================================================
+FILE: js/Components/Settings.js
+================================================
+//================================================
+// FILE: js/Components/Settings.js
+//================================================
+import { Store } from '../Store.js';
+
+class SettingsStep extends HTMLElement {
+  connectedCallback() {
+    this.render();
+  }
+
+  render() {
+    const {
+      bulkRest = 30,
+      numFolds = 4,
+      foldInterval = 15,
+      bakeDuration = 30,
+    } = Store.state;
+
+    this.innerHTML = `
+      <section class="card">
+        <h2>2. Settings</h2>
+
+        <div class="input-group">
+          <label>Rest before first fold (minutes)</label>
+          <input type="number" id="bulk-rest" min="0" value="${bulkRest}">
+        </div>
+
+        <div class="input-group">
+          <label>Number of folds</label>
+          <input type="number" id="folds-num" min="1" value="${numFolds}">
+        </div>
+
+        <div class="input-group">
+          <label>Interval between folds (minutes)</label>
+          <input type="number" id="fold-interval" min="0" value="${foldInterval}">
+        </div>
+
+        <div class="input-group">
+          <label>Bake time (minutes)</label>
+          <input type="number" id="bake-duration" min="1" value="${bakeDuration}">
+        </div>
+
+        <div class="controls" style="margin-top:15px;">
+          <button id="btn-back" class="btn-secondary">Back</button>
+          <button id="btn-skip" class="btn-secondary">Skip</button>
+          <button id="btn-next" class="btn-primary">Next</button>
+        </div>
+      </section>
+    `;
+
+    // store changes as they are typed
+    this.querySelector('#bulk-rest').oninput = (e) => {
+      Store.update({ bulkRest: Math.max(0, parseInt(e.target.value, 10) || 0) });
+    };
+    this.querySelector('#folds-num').oninput = (e) => {
+      Store.update({ numFolds: Math.max(1, parseInt(e.target.value, 10) || 1) });
+    };
+    this.querySelector('#fold-interval').oninput = (e) => {
+      Store.update({ foldInterval: Math.max(0, parseInt(e.target.value, 10) || 0) });
+    };
+    this.querySelector('#bake-duration').oninput = (e) => {
+      Store.update({ bakeDuration: Math.max(1, parseInt(e.target.value, 10) || 1) });
+    };
+
+    // navigation
+    this.querySelector('#btn-back').onclick = () => Store.update({ step: 'calculator' });
+    this.querySelector('#btn-skip').onclick = () => Store.update({ step: 'bulk' });
+    this.querySelector('#btn-next').onclick = () => Store.update({ step: 'bulk' });
+  }
+}
+customElements.define('sourdough-settings', SettingsStep);
+
+
+
+================================================
 FILE: js/Components/Timer.js
 ================================================
 import { Store } from '../Store.js';
+import { notify } from '../notification.js';
 
 class SourdoughTimer extends HTMLElement {
-    connectedCallback() {
+  connectedCallback() {
+    this.render();
+    if (Store.state.timerEndTime) this.resumeTimer();
+  }
+
+  resumeTimer() {
+    this.interval = setInterval(() => {
+      const remaining = Store.state.timerEndTime - Date.now();
+      if (remaining <= 0) {
+        clearInterval(this.interval);
+        Store.update({ timerEndTime: null });
+        notify('Time to fold!', 'info');
         this.render();
-        if (Store.state.timerEndTime) this.resumeTimer();
-    }
+      } else {
+        this.updateDisplay(remaining);
+      }
+    }, 1000);
+  }
 
-    resumeTimer() {
-        this.interval = setInterval(() => {
-            const remaining = Store.state.timerEndTime - Date.now();
-            if (remaining <= 0) {
-                clearInterval(this.interval);
-                Store.update({ timerEndTime: null });
-                alert("Time to fold!");
-                this.render();
-            } else {
-                this.updateDisplay(remaining);
-            }
-        }, 1000);
-    }
+  updateDisplay(ms) {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    const clock = this.querySelector('#timer-display');
+    if (clock) clock.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
 
-    updateDisplay(ms) {
-        const m = Math.floor(ms / 60000);
-        const s = Math.floor((ms % 60000) / 1000);
-        const clock = this.querySelector('#timer-display');
-        if(clock) clock.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
+  render() {
+    this.innerHTML = `
+      <section class="card">
+        <h2>2. Bulk Fermentation</h2>
+        <div class="timer-display" id="timer-display">30:00</div>
+        <div class="stats">
+          <div class="stat-box">
+            <span class="label">Folds</span>
+            <span class="value" id="fold-val">${Store.state.folds}</span>
+          </div>
+        </div>
+        <div class="controls">
+          <button id="btn-timer" class="btn-primary">Start 30m Timer</button>
+          <button id="btn-fold" class="btn-secondary">Record Fold</button>
+        </div>
+      </section>
+    `;
 
-    render() {
-        this.innerHTML = `
-            <section class="card">
-                <h2>2. Bulk Fermentation</h2>
-                <div class="timer-display" id="timer-display">30:00</div>
-                <div class="stats">
-                    <div class="stat-box">
-                        <span class="label">Folds</span>
-                        <span class="value" id="fold-val">${Store.state.folds}</span>
-                    </div>
-                </div>
-                <div class="controls">
-                    <button id="btn-timer" class="btn-primary">Start 30m Timer</button>
-                    <button id="btn-fold" class="btn-secondary">Record Fold</button>
-                </div>
-            </section>
-        `;
+    this.querySelector('#btn-timer').onclick = () => {
+      Store.update({ timerEndTime: Date.now() + 30 * 60 * 1000 });
+      this.resumeTimer();
+    };
 
-        this.querySelector('#btn-timer').onclick = () => {
-            Store.update({ timerEndTime: Date.now() + (30 * 60 * 1000) });
-            this.resumeTimer();
-        };
-
-        this.querySelector('#btn-fold').onclick = () => {
-            Store.update({ folds: Store.state.folds + 1 });
-            this.querySelector('#fold-val').innerText = Store.state.folds;
-        };
-    }
+    this.querySelector('#btn-fold').onclick = () => {
+      Store.update({ folds: Store.state.folds + 1 });
+      this.querySelector('#fold-val').innerText = Store.state.folds;
+    };
+  }
 }
 customElements.define('sourdough-timer', SourdoughTimer);
+
 
 
 ================================================
@@ -1037,21 +1468,79 @@ class WelcomeScreen extends HTMLElement {
 
   render() {
     const name = Store.state.userName ? `, ${Store.state.userName}` : '';
+    const history = Store.state.history || [];
+
+    /* -------------------------------------------------
+       NEW: show newest session first.
+       We make a shallow copy with slice() and then reverse()
+       it so we don't mutate the original stored array.
+       ------------------------------------------------- */
+    const orderedHistory = history.slice().reverse();
+
     this.innerHTML = `
       <section class="card">
         <h2>Welcome${name}!</h2>
         <p>Ready to bake some sourdough?</p>
-        <button id="btn-start" class="btn-primary">Start</button>
+        <button id="btn-start" class="btn-primary" style="margin-top:15px;">Start New Bake</button>
       </section>
+
+      ${orderedHistory
+        .map(
+          (entry, idx) => `
+            <section class="card">
+              <h3>Bake #${history.length - idx}â€¯â€“â€¯${new Date(entry.timestamp).toLocaleString()}</h3>
+              <p>
+                <strong>Flour:</strong> ${entry.flour}â€¯g,
+                <strong>Water:</strong> ${entry.water}â€¯g,
+                <strong>Starter:</strong> ${entry.starter}â€¯g,
+                <strong>Loaves:</strong> ${entry.loaves}
+              </p>
+
+              <p><strong>Final notes:</strong> ${entry.notes || 'â€”'}</p>
+
+              ${
+                entry.foldLogs && entry.foldLogs.length
+                  ? `
+                    <div><strong>Fold notes:</strong>
+                      <ul style="margin:8px 0 0 20px; padding:0;">
+                        ${entry.foldLogs
+                          .map(
+                            log => `
+                              <li><strong>Fold ${log.fold}:</strong> ${
+                                log.note ? log.note : '<em>(no note)</em>'
+                              }</li>`
+                          )
+                          .join('')}
+                      </ul>
+                    </div>
+                  `
+                  : '<p><strong>Fold notes:</strong> â€”</p>'
+              }
+
+              ${
+                entry.photos && entry.photos.length
+                  ? `
+                      <div class="photo-gallery" style="margin-top:15px;">
+                        ${entry.photos
+                          .map(src => `<img src="${src}" class="photo-thumb" alt="bake photo">`)
+                          .join('')}
+                      </div>
+                    `
+                  : ''
+              }
+            </section>
+          `
+        )
+        .join('')}
     `;
 
     this.querySelector('#btn-start').onclick = () => {
-      // Firstâ€‘time secret name
       if (!Store.state.userName) {
         const secret = prompt('Choose a secret name for your baking sessions:');
-        if (!secret) return; // user cancelled
-        Store.update({ userName: secret });
+        if (secret) Store.update({ userName: secret });
+        else return;
       }
+      Store.clearActive();                // keep name & history, reset active data
       Store.update({ step: 'calculator' });
     };
   }
