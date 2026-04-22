@@ -39,10 +39,13 @@ class BakingStep extends HTMLElement {
   updateCountdown() {
     const remaining = Store.state.bakeEndTime - Date.now();
     const display = this.querySelector("#bake-countdown");
+
     if (remaining <= 0) {
       clearInterval(this.intervalId);
       Store.update({ bakeEndTime: null, bakeFinished: true });
-      notify("Bread is ready! Take it out of the oven.", "success");
+
+      /* ---------- NEW: toast + ring ---------- */
+      notify("Bread is ready! Take it out of the oven.", "success", 5000, true);
     } else if (display) {
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);

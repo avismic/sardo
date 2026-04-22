@@ -1,8 +1,8 @@
 //================================================
 // FILE: js/Components/FoldingStep.js
 //================================================
-import { Store } from '../Store.js';
-import { notify } from '../notification.js';
+import { Store } from "../Store.js";
+import { notify } from "../notification.js";
 
 class FoldingStep extends HTMLElement {
   constructor() {
@@ -12,12 +12,12 @@ class FoldingStep extends HTMLElement {
   }
 
   connectedCallback() {
-    window.addEventListener('stateChange', this.stateListener);
+    window.addEventListener("stateChange", this.stateListener);
     this.render();
   }
 
   disconnectedCallback() {
-    window.removeEventListener('stateChange', this.stateListener);
+    window.removeEventListener("stateChange", this.stateListener);
     clearInterval(this.intervalId);
   }
 
@@ -33,15 +33,20 @@ class FoldingStep extends HTMLElement {
 
   updateCountdown() {
     const remaining = Store.state.nextFoldTime - Date.now();
-    const display = this.querySelector('#fold-countdown');
+    const display = this.querySelector("#fold-countdown");
     if (!display) return;
+
     if (remaining <= 0) {
       clearInterval(this.intervalId);
       Store.update({ nextFoldTime: null });
+
+      /* ---------- NEW: toast + ring ---------- */
+      // “info” toast, 3 seconds, and play a ring
+      notify("Time for the next fold!", "info", 3000, true);
     } else {
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);
-      display.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      display.textContent = `${mins}:${secs < 10 ? "0" : ""}${secs}`;
     }
   }
 
@@ -79,22 +84,24 @@ class FoldingStep extends HTMLElement {
       `;
 
       // Back → Bulk
-      this.querySelector('#btn-back').onclick = () => Store.update({ step: 'bulk' });
+      this.querySelector("#btn-back").onclick = () =>
+        Store.update({ step: "bulk" });
       // Skip → Baking (skip folding entirely)
-      this.querySelector('#btn-skip').onclick = () => Store.update({ step: 'baking' });
+      this.querySelector("#btn-skip").onclick = () =>
+        Store.update({ step: "baking" });
 
       // Inputs
-      this.querySelector('#folds-num').oninput = (e) => {
+      this.querySelector("#folds-num").oninput = (e) => {
         const v = Math.max(1, parseInt(e.target.value, 10) || 1);
         Store.update({ numFolds: v });
       };
-      this.querySelector('#folds-interval').oninput = (e) => {
+      this.querySelector("#folds-interval").oninput = (e) => {
         const v = Math.max(0, parseInt(e.target.value, 10) || 0);
         Store.update({ foldInterval: v });
       };
 
       // Start folding – switch to folding UI
-      this.querySelector('#btn-start-folding').onclick = () => {
+      this.querySelector("#btn-start-folding").onclick = () => {
         Store.update({
           foldsConfigured: true,
           foldsDone: 0,
@@ -113,9 +120,10 @@ class FoldingStep extends HTMLElement {
     this.innerHTML = `
       <section class="card">
         <h2>3. Folding ${currentFold} of ${numFolds}</h2>
-        ${waiting
-          ? `<div>Next fold in: <span id="fold-countdown"></span></div>`
-          : `${!allDone ? `<button id="btn-do-fold" class="btn-primary">Perform Fold #${currentFold}</button>` : ''}`
+        ${
+          waiting
+            ? `<div>Next fold in: <span id="fold-countdown"></span></div>`
+            : `${!allDone ? `<button id="btn-do-fold" class="btn-primary">Perform Fold #${currentFold}</button>` : ""}`
         }
 
         <div id="fold-log-section" style="margin-top:15px;"></div>
@@ -125,19 +133,19 @@ class FoldingStep extends HTMLElement {
           <button id="btn-skip" class="btn-secondary">Skip</button>
         </div>
 
-        ${allDone ? `<button id="btn-to-baking" class="btn-secondary" style="margin-top:15px;">Proceed to Baking</button>` : ''}
+        ${allDone ? `<button id="btn-to-baking" class="btn-secondary" style="margin-top:15px;">Proceed to Baking</button>` : ""}
       </section>
     `;
 
     // Back → Bulk
-    this.querySelector('#btn-back').onclick = () => {
+    this.querySelector("#btn-back").onclick = () => {
       clearInterval(this.intervalId);
-      Store.update({ step: 'bulk' });
+      Store.update({ step: "bulk" });
     };
     // Skip → Baking
-    this.querySelector('#btn-skip').onclick = () => {
+    this.querySelector("#btn-skip").onclick = () => {
       clearInterval(this.intervalId);
-      Store.update({ step: 'baking' });
+      Store.update({ step: "baking" });
     };
 
     // Countdown handling
@@ -149,11 +157,11 @@ class FoldingStep extends HTMLElement {
 
     // Perform a fold (if we are not waiting)
     if (!waiting && !allDone) {
-      this.querySelector('#btn-do-fold').onclick = () => {
+      this.querySelector("#btn-do-fold").onclick = () => {
         const note = prompt(`Add a note for Fold #${currentFold} (optional)`);
         const logEntry = {
           fold: currentFold,
-          note: note || '',
+          note: note || "",
           timestamp: Date.now(),
         };
         const updatedLogs = [...Store.state.foldLogs, logEntry];
@@ -171,8 +179,9 @@ class FoldingStep extends HTMLElement {
 
     // After all folds → go to baking
     if (allDone) {
-      this.querySelector('#btn-to-baking').onclick = () => Store.update({ step: 'baking' });
+      this.querySelector("#btn-to-baking").onclick = () =>
+        Store.update({ step: "baking" });
     }
   }
 }
-customElements.define('folding-step', FoldingStep);
+customElements.define("folding-step", FoldingStep);
